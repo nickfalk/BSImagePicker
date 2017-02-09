@@ -50,15 +50,15 @@ final class ZoomAnimator : NSObject, UIViewControllerAnimatedTransitioning {
             let scalingImage = UIImageViewModeScaleAspect(frame: scalingFrame)
             scalingImage.contentMode = sourceImageView.contentMode
             scalingImage.image = sourceImageView.image
-            
+
+            // Setup image aspect
+            let contentModeIsFit = destinationImageView.contentMode == .scaleAspectFit
+            let scaleAspect: UIImageViewModeScaleAspect.ScaleAspect = contentModeIsFit ? .fit : .fill
+
             //Init image scale
             let destinationFrame = toViewController.view.convert(destinationImageView.bounds, from: destinationImageView.superview)
-            if destinationImageView.contentMode == .scaleAspectFit {
-                scalingImage.initToScaleAspectFit(toFrame: destinationFrame)
-            } else {
-                scalingImage.initToScaleAspectFill(toFrame: destinationFrame)
-            }
-            
+            scalingImage.initialeState(scaleAspect, newFrame: destinationFrame)
+
             // Add views to container view
             containerView.addSubview(toViewController.view)
             containerView.addSubview(scalingImage)
@@ -71,20 +71,11 @@ final class ZoomAnimator : NSObject, UIViewControllerAnimatedTransitioning {
                     // Fade in
                     fromViewController.view.alpha = 0.0
                     toViewController.view.alpha = 1.0
-                    
-                    if destinationImageView.contentMode == .scaleAspectFit {
-                        scalingImage.animaticToScaleAspectFit()
-                    } else {
-                        scalingImage.animaticToScaleAspectFill()
-                    }
+                    scalingImage.transitionState(scaleAspect)
                 }, completion: { (finished) -> Void in
                     
                     // Finish image scaling and remove image view
-                    if destinationImageView.contentMode == .scaleAspectFit {
-                        scalingImage.animateFinishToScaleAspectFit()
-                    } else {
-                        scalingImage.animateFinishToScaleAspectFill()
-                    }
+                    scalingImage.endState(scaleAspect)
                     scalingImage.removeFromSuperview()
                     
                     // Unhide
